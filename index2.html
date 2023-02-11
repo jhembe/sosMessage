@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <title>Emergency Notification App</title>
+    <style>
+        .button {
+            width: 200px;
+            height: 200px;
+            background-color: red;
+            border-radius: 50%;
+            text-align: center;
+            font-size: 36px;
+            color: white;
+            cursor: pointer;
+            margin: 0 auto;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="button" id="emergencyButton">SOS</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const emergencyButton = document.getElementById("emergencyButton");
+
+        emergencyButton.addEventListener("click", () => {
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    const notification = new Notification("Emergency Notification", {
+                        body: "This is an emergency notification. Please take appropriate action."
+                    });
+
+                    // Save the notification status to local storage
+                    localStorage.setItem("emergencyNotification", JSON.stringify({
+                        sent: true,
+                        timestamp: new Date()
+                    }));
+
+                    // Send the notification to the recipient's device
+                    fetch("https://example.com/send-notification", {
+                        method: "POST", body: JSON.stringify({
+                            message: "This is an emergency notification. Please take appropriate action."
+                        }),
+                        headers: {
+                            "Content-Type": "application/json"
+                        }
+                    })
+                        .then(response => {
+                            console.log("Emergency notification sent successfully.");
+                        })
+                        .catch(error => {
+                            console.error("Error sending emergency notification:", error);
+                        });
+                } else {
+                    console.error("Notification permission not granted.");
+                }
+            });
+        });
+
+        // Register the service worker
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("/service-worker.js").then(registration => {
+                console.log("Service worker registered:", registration);
+            });
+        }
+    </script>
+</body>
+
+</html>
